@@ -7,6 +7,7 @@
 int main(void) {
 	int fd, num_write, count = 0;
 	char buffer[] = "Hello world";
+
 	fd = open("hello.txt", O_CREAT |  O_RDWR | O_APPEND);
 	if (-1 == fd) {
 		printf("Open failed");
