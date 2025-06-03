@@ -29,6 +29,7 @@ int main(int args, char *argv[]) {
 		printf("writing %d bytes in file %s\n", re_val, argv[1]);
 		close(fd);
 		printf("My PID(child): %d, My father: %d\n", getpid(), getppid());
+		//cho cho tien trinh cha ket thuc (neu xet trong truong hop tien trinh mo coi)
 		sleep(5);
 		printf("My PID(child): %d, My father: %d\n", getpid(), getppid());
 		sleep(10);
