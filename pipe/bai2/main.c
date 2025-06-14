@@ -35,6 +35,7 @@ int main() {
     if (child1 == -1) {
         handle_error("Create process 1 failed.\n");
     }
+
     if (child1 == 0) {
         // Child 1
         struct sigaction sig;

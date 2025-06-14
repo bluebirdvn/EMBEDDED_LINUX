@@ -6,10 +6,14 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <errno.h>
+
 #define BUFFER_SIZE 256
 #define handle_error(msg) \
     do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
+
 int main(int argc, char *argv[]) {
+
     struct sockaddr_in server_addr, client_addr;
     int port_no, opt;
     int server_fd;
@@ -29,7 +33,9 @@ int main(int argc, char *argv[]) {
     if (server_fd == -1) {
         handle_error("socket()_server_fd.\n");
     }
+
 	opt = 1;
+
 	if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
     	handle_error("setsockopt(SO_REUSEADDR)");
 	}
@@ -45,11 +51,13 @@ int main(int argc, char *argv[]) {
     int num_read, num_write;
     socklen_t len = sizeof(client_addr);
     system("clear");
+
     while (1)
     {
         
         memset(buffer_send, 0, BUFFER_SIZE);
         memset(buffer_received, 0, BUFFER_SIZE);
+
         printf("Receive:\n");
         num_read = recvfrom(server_fd, buffer_received, BUFFER_SIZE, 0, (struct sockaddr*)&client_addr, &len);
 
@@ -59,6 +67,7 @@ int main(int argc, char *argv[]) {
         if (num_read >= 1) {
             printf("Mesage from client: %s\n", buffer_received);
         }
+        
         printf("Send:\n");
         fgets(buffer_send, BUFFER_SIZE, stdin);
         num_write = sendto(server_fd, buffer_send, BUFFER_SIZE, 0, (struct sockaddr*)&client_addr, len);

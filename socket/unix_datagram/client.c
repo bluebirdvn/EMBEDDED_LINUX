@@ -7,26 +7,33 @@
 #include <string.h>
 
 #define handle_error(msg) do {perror(msg);exit(EXIT_FAILURE);} while (0)
+
 #define SOCKPATH "/tmp/mysock"
 #define CLINETPATH "/tmp/clientsock"
+
 #define BUFFERSIZE 256
 
 int main() {
     struct sockaddr_un server_addr, client_addr;
     int client_fd;
     socklen_t len;
+
     client_fd = socket(AF_UNIX, SOCK_DGRAM, 0);
     if (client_fd == -1) {
         handle_error("socket()");
     }
     unlink(CLINETPATH);
+
     memset(&client_addr, 0, sizeof(client_addr));
+
     client_addr.sun_family = AF_UNIX;
     strncpy(client_addr.sun_path, CLINETPATH, sizeof(client_addr.sun_path) - 1);
     len = sizeof(client_addr);
+
     if (bind(client_fd, (struct sockaddr*)&client_addr, len) == -1) {
         handle_error("bind()");
     }
+
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sun_family = AF_UNIX;
     strncpy(server_addr.sun_path, SOCKPATH, sizeof(server_addr.sun_path) - 1);
@@ -34,6 +41,7 @@ int main() {
 
     int send_num, read_num;
     len = sizeof(server_addr);
+    
     while (1)
     {
         printf("Send message to server: ");

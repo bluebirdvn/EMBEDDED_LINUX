@@ -30,7 +30,6 @@ int main() {
         sig.sa_handler = sig_handler;
         sigemptyset(&sig.sa_mask);
         sig.sa_flags = SA_RESTART;
-        
         if (sigaction(SIGUSR1, &sig, NULL) == -1) {
             handle_error("sigaction.");
         }
@@ -39,9 +38,10 @@ int main() {
         while(!ready) {
             pause();
         }
+
         printf("Child received wake-up signal\n");
-        
         printf("This is child process.\n");
+
         while (1) {
             int num = read(fds[0], recv_buffer, sizeof(recv_buffer) - 1);
             
@@ -66,8 +66,6 @@ int main() {
     } else {
         // Parent process
         printf("This is parent process. Child PID: %d\n", thr);
-        
-        // Đợi một chút để đảm bảo child đã thiết lập xử lý tín hiệu
         sleep(1);
         
         if (close(fds[0]) == -1) {
@@ -77,15 +75,14 @@ int main() {
             handle_error("kill");
         }
     
-        
-        while (1) {
-            
+        while (1) {    
             fflush(stdout);
             if (!fgets(send_buffer, sizeof(send_buffer), stdin)) {
                 break;
             }
             
             int len = strlen(send_buffer);
+            
             if (write(fds[1], send_buffer, len) != len) {
                 handle_error("write failed");
             }

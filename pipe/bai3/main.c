@@ -9,16 +9,19 @@
 
 #define BUFFER_SIZE 256
 #define handle_error(msg) do {perror(msg), exit(EXIT_FAILURE);} while (0)
+
 int ready = 0;
 void sig_handler(int signo) {
     (void)signo;
     ready = 1;
 }
+
 int main() {
     int pd[2];
     if (pipe(pd) == -1) {
         handle_error("pipe error");
     }
+
     pid_t pid;
     pid = fork();
 
@@ -27,6 +30,7 @@ int main() {
     if (pid == -1) {
         handle_error("pid error");
     } else if (pid == 0) {
+
         struct sigaction sig;
         sig.sa_handler = sig_handler;
         sigemptyset(&sig.sa_mask);
@@ -40,10 +44,13 @@ int main() {
         while (!ready) {
             pause();
         }
+
         printf("This is child process. My pid %d, my father %d", getpid(), getppid());
+
         if (close(pd[1]) == -1) {
             handle_error("close write from child failed");
         }
+
         int num_read = read(pd[0], read_buffer, BUFFER_SIZE);
 
         if (num_read == -1) {
@@ -59,17 +66,17 @@ int main() {
 
     } else {
         printf("This is parent process. My pid: %d\n", getpid());
-
         close(pd[0]);
+
         printf("Msg to child: ");
         fgets(send_buffer, BUFFER_SIZE, stdin);
-
         int num_write = write(pd[1], send_buffer, BUFFER_SIZE);
 
         if (num_write == -1) {
             handle_error("write");
         }
         kill(pid, SIGUSR1);
+        
         close(pd[1]);
         wait(NULL);
         exit(EXIT_SUCCESS);

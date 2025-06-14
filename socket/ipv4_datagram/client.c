@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <errno.h>
+
 #define BUFFER_SIZE 256
 #define handle_error(msg) \
     do { perror(msg); exit(EXIT_FAILURE); } while (0)
@@ -19,14 +20,15 @@ int main(int argc, char *argv[]) {
     }
 
     server_fd = socket(AF_INET, SOCK_DGRAM, 0);
-
     if (server_fd == -1) {
         handle_error("socket()");
     }
+
     portnum = atoi(argv[2]);
 
     client_addr.sin_family = AF_INET;
     client_addr.sin_port = htons(portnum);
+
     if (inet_pton(AF_INET, argv[1], &client_addr.sin_addr) == -1) {
         handle_error("inet_pton()");
     }
@@ -34,6 +36,7 @@ int main(int argc, char *argv[]) {
     char buffer_receive[BUFFER_SIZE] = {0}, buffer_send[BUFFER_SIZE] = {0};
     int num_read, num_write;
     socklen_t len = sizeof(client_addr);
+    
     while (1) {
         printf("Send:\n");
         fgets(buffer_send, BUFFER_SIZE, stdin);
