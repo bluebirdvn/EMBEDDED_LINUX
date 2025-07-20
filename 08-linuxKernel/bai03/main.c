@@ -5,6 +5,7 @@
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 
+#include "gpio.h"
 
 #define AUTHOR "Tuan"
 #define DESCRIPTION "init and exit kernel module"
@@ -80,6 +81,17 @@ static ssize_t m_write(struct file *filp, const char __user *user_buf, size_t si
 
     pr_info(KERN_INFO "Data from user: %s", gpio67.kmalloc_ptr);
 
+    gpio67.kmalloc_ptr[strcspn(gpio67.kmalloc_ptr, "\n")] = 0;
+
+    // Check data from user to set/clear gpio67
+    if (strcmp(gpio67.kmalloc_ptr, "on") == 0) {
+        gpio_set();
+    } else if (strcmp(gpio67.kmalloc_ptr, "off") == 0) {
+        gpio_clear();
+    } else {
+        pr_warn("Invalid command: %s\n", gpio67.kmalloc_ptr);
+    }
+
     *offset += write;
 
     gpio67.size = *offset;
@@ -90,6 +102,7 @@ static ssize_t m_write(struct file *filp, const char __user *user_buf, size_t si
 static int __init hello_init(void) 
 {
     printk(KERN_INFO "hello world.\n");
+    
     if (alloc_chrdev_region(&gpio67.dev_num, 0, 1, "gpio67-cdev") < 0) {
         pr_err("Failed to alloc chrdev to gpio67.\n");
         return -1;
@@ -101,6 +114,7 @@ static int __init hello_init(void)
         pr_err("Can't add gpio 67 device to system");
         goto rm_device_numb;
     }
+
     gpio67.gpio_class = class_create("gpio67-class");
     if (gpio67.gpio_class == NULL) {
         pr_err("Can't create struct class for gpio 67.\n");
@@ -116,10 +130,17 @@ static int __init hello_init(void)
         pr_err("Can't allocate memory in kernel.\n");
         goto rm_device;
     }
+
+    if (gpio_init() < 0) {
+        pr_err("Failed to intit hardware.\n");
+        goto rm_buffer;
+    }
+    
     pr_info("Major: %d, Minor: %d\n", MAJOR(gpio67.dev_num), MINOR(gpio67.dev_num));
     
     return 0;
-
+rm_buffer:
+    kfree(gpio67.kmalloc_ptr);
 rm_device:
     device_destroy(gpio67.gpio_class, gpio67.dev_num);
 rm_gpio_class:
@@ -132,6 +153,9 @@ rm_device_numb:
 
 static void __exit hello_exit(void) 
 {
+    gpio_clear();
+    gpio_exit();
+    
    if (gpio67.kmalloc_ptr)
         kfree(gpio67.kmalloc_ptr);
 
